@@ -30,13 +30,19 @@ class URL:
             type=socket.SOCK_STREAM,
             proto=socket.IPPROTO_TCP,
         )
+
+        self.connection = "close"
+        self.user_agent = ("abc")
+
         s.connect((self.host, self.port))
         if self.scheme == "https":
             ctx = ssl.create_default_context()
             s = ctx.wrap_socket(s, server_hostname=self.host)
 
-        request = "GET {} HTTP/1.0\r\n".format(self.path)
+        request = "GET {} HTTP/1.1\r\n".format(self.path)
         request += "Host: {}\r\n".format(self.host)
+        request += "Connection: {}\r\n".format(self.connection)
+        request += "User-Agent: {}\r\n".format(self.user_agent)
         request += "\r\n"
         s.send(request.encode("utf8"))
 
@@ -53,7 +59,7 @@ class URL:
         assert "transfer-encoding" not in response_headers
         assert "content-encoding" not in response_headers
         content = response.read()
-        s.close
+        s.close()
 
         return content
 
