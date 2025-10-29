@@ -2,14 +2,28 @@ import socket
 import ssl
 
 class URL:
-    def __init__(self, url):
+    def __init__(self, url=None):
+
+        if url == None:
+            self.path = "testforbrowser.txt"
+            self.scheme = "file"
+            return
+
         self.scheme, url = url.split("://", 1)
-        assert self.scheme in ["http", "https"]
+        print(self.scheme, "this is self.scheme")
+        assert self.scheme in ["http", "https", "file"]
 
         if "/" not in url:
             url = url + "/"
         
         self.host, url = url.split("/", 1)
+
+        if self.scheme == "file":
+            self.path = self.host + url
+            print(self.path, "this is self.path")
+            self.host = None
+            self.port = None
+            return
 
         if ":" in self.host:
             self.host, port = self.host.split(":", 1)
@@ -21,18 +35,28 @@ class URL:
             self.port = 80
         elif self.scheme == "https":
             self.port = 443
-            
-
 
     def request(self):
+
+        if self.scheme == "file":
+
+            file_path = "/home/suojaola/" + self.path
+            print(file_path, "this is file_path")
+
+            with open(file_path, "r") as f:
+                content = f.read()
+                return content
+
         s = socket.socket(
             family=socket.AF_INET,
             type=socket.SOCK_STREAM,
             proto=socket.IPPROTO_TCP,
         )
 
+        # remember to make it easier to add headers
+
         self.connection = "close"
-        self.user_agent = ("abc")
+        self.user_agent = "abc"
 
         s.connect((self.host, self.port))
         if self.scheme == "https":
@@ -79,7 +103,12 @@ def load(url):
 
 if __name__ == "__main__":
     import sys
-    load(URL(sys.argv[1]))
+
+    if len(sys.argv) > 1:
+        load(URL(sys.argv[1]))
+    
+    else:
+        load(URL(None))
 
 
 
